@@ -13,7 +13,16 @@ const options = {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  // Verifica si es curl o navegador
+  const userAgent = req.headers['user-agent'];
+
+  if(userAgent && userAgent.includes('curl')){
+    // Respuesta simple para curl
+    res.send('🚀 Conectado correctamente');
+  } else {
+    // HTML completo para navegadores normales
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  }
 });
 
 app.get('/creadores', (req, res) => {
