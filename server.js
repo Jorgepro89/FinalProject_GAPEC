@@ -10,10 +10,8 @@ const options = {
   cert: fs.readFileSync(path.join(__dirname, "certs", "server.cert"))
 };
 
-// archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas principales
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
@@ -22,7 +20,6 @@ app.get('/creadores', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'creadores.html'));
 });
 
-// Servidor HTTPS escuchando en puerto 443
 https.createServer(options, app).listen(443, () => {
   console.log("🔒 Servidor HTTPS funcionando en puerto 443");
 });

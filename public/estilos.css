@@ -1,83 +1,113 @@
-/* Estilos generales del cuerpo */
+/* Estilos generales */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
-    margin: 0;
-    padding-top: 60px; /* para evitar que la barra tape contenido */
-  }
-  
-  .contenedor {
-    background-color: #fff;
-    width: 80%;
-    max-width: 600px;
-    margin: 50px auto;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    text-align: center;
-  }
-  
-  h1 {
-    margin-bottom: 25px;
-    color: #333;
-  }
-  
-  /* Botones en vertical */
-  .botones-modalidad {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 30px;
-  }
-  
-  .botones-modalidad button {
-    padding: 15px;
-    font-size: 1.1rem;
-    background-color: #e2e2e2;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .botones-modalidad button:hover {
-    background-color: #cacaca;
-  }
-  
-  /* Barra superior estilo navegación */
-  .barra-superior {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: #ffffff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 25px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    z-index: 100;
-  }
-  
-  .barra-superior a {
-    color: #555;
-    text-decoration: none;
-    font-size: 1rem;
-  }
-  
-  .barra-superior .inicio {
-    display: flex;
-    align-items: center;
-  }
-  
-  .lista-creadores {
-    list-style: none;
-    padding: 0;
-    font-size: 1.1rem;
-    line-height: 1.6;
-  }
-  
-  .lista-creadores li {
-    margin: 10px 0;
-  }
-  
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+  margin: 0;
+  padding-top: 65px;
+  color: #333;
+}
+
+/* Contenedor principal centrado */
+.contenedor {
+  background-color: #ffffff;
+  width: 80%;
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 25px;
+  font-size: 2rem;
+  color: #0d6efd;
+}
+
+/* Barra superior con colores diferentes y atractivos */
+.barra-superior {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #0d6efd; /* azul vibrante */
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.barra-superior a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.barra-superior a:hover {
+  opacity: 0.8;
+}
+
+.barra-superior .inicio {
+  display: flex;
+  align-items: center;
+}
+
+/* Iconos */
+.barra-superior .inicio i {
+  stroke-width: 2.5;
+  width: 26px;
+  height: 26px;
+}
+
+/* Estilo de botones página Index (vertical y centrados) */
+.botones-modalidad {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.botones-modalidad button {
+  width: 80%;
+  padding: 15px;
+  font-size: 1.2rem;
+  color: #fff;
+  background-color: #0d6efd;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.botones-modalidad button:hover {
+  background-color: #0b5ed7;
+}
+
+/* Lista de Creadores bien centrada y atractiva */
+.lista-creadores {
+  list-style: none;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 2.0;
+  margin-top: 20px;
+}
+
+.lista-creadores li {
+  margin: 12px 0;
+  padding: 8px 0;
+  background-color: #e7f1ff;
+  border-radius: 6px;
+  transition: transform 0.3s ease;
+}
+
+.lista-creadores li:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
