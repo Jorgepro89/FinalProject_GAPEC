@@ -1,9 +1,16 @@
-const socket = io(); // 🚀
+const socket = io();
+
+let idPartida = '';
+let palabra = '';
+let palabraOculta = [];
+let errores = 0;
+let maxErrores = 6;
+const canvas = document.getElementById('canvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
 
 function crearPartida() {
   const tema = document.getElementById('tema').value.trim();
   if (tema !== '') {
-    // Primero pedimos a la API la palabra basada en la categoría
     fetch('/api/get-word', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -13,6 +20,7 @@ function crearPartida() {
     .then(data => {
       console.log('Palabra generada por IA:', data.word);
       socket.emit('crearPartida', { palabra: data.word });
+      palabra = data.word.toUpperCase();
     })
     .catch(error => {
       console.error('Error obteniendo palabra:', error);
@@ -27,29 +35,94 @@ function unirsePartida() {
   const id = document.getElementById('inputPartida').value.trim();
   if (id !== '') {
     socket.emit('unirsePartida', id);
+    idPartida = id;
   } else {
     alert('Por favor ingresa un ID de partida válido.');
   }
 }
 
-// Recibe ID de la partida creada
+// Recibe ID de partida creada
 socket.on('partidaCreada', (id) => {
-  console.log('🎯 ID de partida creado:', id);
+  console.log('ID de partida creado:', id);
   alert('🎯 ID de partida: ' + id);
+  idPartida = id;
 });
 
-// Confirmación de unión a partida
-socket.on('unido', (data) => {
-  console.log('✅', data.mensaje);
-  alert('✅ Te has unido a la partida');
-});
-
-// Jugadores listos
+// Cuando se unen jugadores
 socket.on('jugadoresListos', () => {
-  console.log('🎯 Jugadores listos, ¡comienza la partida!');
+  document.getElementById('inicio').style.display = 'none';
+  document.getElementById('juego').style.display = 'block';
+  inicializarJuego();
 });
 
-// Cuando llega una letra
+// Inicializar juego
+function inicializarJuego() {
+  palabraOculta = Array(palabra.length).fill('_');
+  actualizarPalabra();
+  dibujarAhorcado();
+}
+
+// Actualizar palabra oculta en pantalla
+function actualizarPalabra() {
+  document.getElementById('palabraSecreta').innerText = palabraOculta.join(' ');
+}
+
+// Enviar letra al servidor
+function enviarLetra() {
+  const letra = document.getElementById('letraInput').value.toUpperCase();
+  document.getElementById('letraInput').value = '';
+  if (letra && idPartida) {
+    socket.emit('intentoLetra', { id: idPartida, letra });
+  }
+}
+
+// Cuando se recibe una letra
 socket.on('letraRecibida', (data) => {
-  console.log('Letra recibida:', data.letra);
+  const letra = data.letra.toUpperCase();
+  if (palabra.includes(letra)) {
+    for (let i = 0; i < palabra.length; i++) {
+      if (palabra[i] === letra) {
+        palabraOculta[i] = letra;
+      }
+    }
+  } else {
+    errores++;
+    dibujarAhorcado();
+  }
+  actualizarPalabra();
 });
+
+// Dibujar el ahorcado
+function dibujarAhorcado() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();
+  ctx.moveTo(10, 190);
+  ctx.lineTo(190, 190);
+  ctx.moveTo(50, 190);
+  ctx.lineTo(50, 10);
+  ctx.lineTo(150, 10);
+  ctx.lineTo(150, 30);
+  if (errores > 0) ctx.arc(150, 40, 10, 0, Math.PI * 2); // Cabeza
+  if (errores > 1) {
+    ctx.moveTo(150, 50);
+    ctx.lineTo(150, 100); // Cuerpo
+  }
+  if (errores > 2) {
+    ctx.moveTo(150, 60);
+    ctx.lineTo(130, 80); // Brazo izquierdo
+  }
+  if (errores > 3) {
+    ctx.moveTo(150, 60);
+    ctx.lineTo(170, 80); // Brazo derecho
+  }
+  if (errores > 4) {
+    ctx.moveTo(150, 100);
+    ctx.lineTo(130, 130); // Pierna izquierda
+  }
+  if (errores > 5) {
+    ctx.moveTo(150, 100);
+    ctx.lineTo(170, 130); // Pierna derecha
+  }
+  ctx.stroke();
+}
