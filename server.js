@@ -64,7 +64,6 @@ app.post('/api/get-word', async (req, res) => {
 
     const data = JSON.parse(content);
 
-    // 🔔 Mostrar en consola la palabra secreta generada
     console.log(`📢 Palabra secreta generada para la categoría "${categoria}": ${data.word}`);
 
     res.json(data);
@@ -74,6 +73,15 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
+// Ruta principal
+app.get('/', (req, res) => {
+  const userAgent = req.get('User-Agent') || '';
+  if (userAgent.includes('curl')) {
+    res.send('✅ Conexión correcta al servidor HTTPS.');
+  } else {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  }
+});
 
 // Configuración HTTPS
 const options = {
@@ -96,7 +104,6 @@ io.on('connection', (socket) => {
     const id = Math.random().toString(36).substring(2, 8);
     partidas[id] = { palabra, jugadores: [socket.id] };
 
-    // 🔥 Enviar SOLO el id (no como objeto)
     socket.emit('partidaCreada', id);
 
     console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra secreta: ${palabra}`);
@@ -128,16 +135,6 @@ io.on('connection', (socket) => {
       }
     }
   });
-});
-
-// Ruta principal
-app.get('/', (req, res) => {
-  const userAgent = req.get('User-Agent') || '';
-  if (userAgent.includes('curl')) {
-    res.send('✅ Conexión correcta al servidor HTTPS.');
-  } else {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
-  }
 });
 
 // Lanzar el servidor HTTPS

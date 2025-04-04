@@ -2,35 +2,43 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Multijugador - Ahorcado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego del Ahorcado - Multijugador</title>
   <link rel="stylesheet" href="/css/estilos.css">
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script src="/js/multiplayer.js" defer></script>
+
+  <!-- Librería de iconos (opcional si quieres mantener diseño bonito) -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
+
 <body>
+  <!-- Barra superior -->
+  <nav class="barra-superior">
+    <a href="/" class="inicio">
+      <i data-lucide="home"></i>
+    </a>
+    <a href="/creadores.html" class="enlace-creadores">Creadores</a>
+  </nav>
 
-<nav class="barra-superior">
-  <a href="/" class="inicio">
-    <i data-lucide="home"></i>
-  </a>
-  <a href="/creadores.html" class="enlace-creadores">Creadores</a>
-</nav>
+  <div class="contenedor">
+    <h1>🎮 Juego del Ahorcado - Multijugador</h1>
 
-<div class="contenedor">
-  <h1>👥 Multijugador</h1>
+    <!-- Botón para crear nueva partida -->
+    <button onclick="crearPartida('Ingenieria')">Crear nueva partida</button>
 
-  <input id="categoria" placeholder="Escribe una categoría (ej. animales)">
-  <button onclick="generarPalabra()">Crear Partida Nueva</button>
+    <!-- Espacio para unir partida -->
+    <div>
+      <input type="text" id="inputPartida" placeholder="Ingresa ID de partida">
+      <button onclick="unirsePartida()">Unirse a Partida</button>
+    </div>
 
-  <div id="idPartida" class="hidden">
-    <h2>Tu ID de partida:</h2>
-    <p id="codigoPartida"></p>
-
-    <input id="unirCodigo" placeholder="Código para unirte">
-    <button onclick="unirsePartida()">Unirse a partida</button>
+    <!-- Canvas o área de juego aquí si quieres -->
   </div>
 
-</div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/multiplayer.js"></script>
 
+  <script>
+    lucide.createIcons(); // Carga iconos si quieres
+  </script>
 </body>
 </html>
