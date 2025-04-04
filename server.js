@@ -43,6 +43,7 @@ app.post('/api/get-categories', async (req, res) => {
 });
 
 
+
 // Obtener palabra secreta
 app.post('/api/get-word', async (req, res) => {
   const { categoria } = req.body;

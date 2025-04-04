@@ -2,10 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Modo Solo - Ahorcado IA</title>
+  <title>Solo - Juego del Ahorcado</title>
   <link rel="stylesheet" href="/css/estilos.css">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="/js/solo.js" defer></script>
 </head>
 <body>
 
@@ -16,25 +14,24 @@
   <a href="/creadores.html" class="enlace-creadores">Creadores</a>
 </nav>
 
-<div class="container">
-  <h1>🎯 Modo Solo</h1>
-  
-  <div id="tema-input">
-    <input type="text" id="tema" placeholder="Escribe un tema (ej. Ingeniería)">
-    <button onclick="enviarTema()">Enviar Tema</button>
-  </div>
+<div class="contenedor">
+  <h1>🎯 Ahorcado - Modo Solo</h1>
 
-  <div id="categorias" class="hidden"></div>
+  <input id="tema" placeholder="Escribe un tema..." />
+  <button onclick="enviarTema()">Enviar Tema</button>
 
-  <div id="juego" class="hidden">
-    <canvas id="canvas" width="200" height="250"></canvas>
-    <div id="palabra-oculta"></div>
-    <input type="text" id="letra" maxlength="1" placeholder="Letra">
-    <button onclick="probarLetra()">Probar letra</button>
-    <div id="letras-incorrectas"></div>
-  </div>
+  <div id="categorias" class="categorias-contenedor"></div>
+
+  <canvas id="canvas" width="300" height="400"></canvas>
+
+  <div id="palabra-secreta"></div>
+
+  <input id="letra" placeholder="Ingresa una letra" maxlength="1">
+  <button onclick="probarLetra()">Probar Letra</button>
 </div>
 
+<script src="/js/solo.js" defer></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
   lucide.createIcons();
 </script>

@@ -1,88 +1,88 @@
-let palabraSecreta = '';
+let palabraActual = '';
 let palabraMostrada = '';
-let intentos = 6;
-let letrasIncorrectas = [];
+let errores = 0;
+const maxErrores = 6;
 
-async function enviarTema() {
+function enviarTema() {
   const tema = document.getElementById('tema').value.trim();
-  if (!tema) return alert('Escribe un tema primero.');
+  if (!tema) {
+    alert('Por favor escribe un tema.');
+    return;
+  }
 
-  const res = await fetch('/api/get-categories', {
+  fetch('/api/get-categories', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tema })
+    body: JSON.stringify({ tema: tema })
+  })
+  .then(response => response.json())
+  .then(categorias => {
+    const contenedor = document.getElementById('categorias');
+    contenedor.innerHTML = '';
+
+    categorias.forEach(cat => {
+      const boton = document.createElement('button');
+      boton.textContent = cat;
+      boton.onclick = () => seleccionarCategoria(cat);
+      contenedor.appendChild(boton);
+    });
+  })
+  .catch(error => {
+    console.error(error);
+    alert('Error al obtener las categorías');
   });
-
-  const categorias = await res.json();
-
-  const divCategorias = document.getElementById('categorias');
-  divCategorias.innerHTML = '<h2>Elige una categoría:</h2>';
-  categorias.forEach(cat => {
-    const btn = document.createElement('button');
-    btn.innerText = cat;
-    btn.onclick = () => seleccionarCategoria(cat);
-    divCategorias.appendChild(btn);
-  });
-
-  document.getElementById('tema-input').classList.add('hidden');
-  divCategorias.classList.remove('hidden');
 }
 
-async function seleccionarCategoria(categoria) {
-  const res = await fetch('/api/get-word', {
+function seleccionarCategoria(categoria) {
+  fetch('/api/get-word', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ categoria })
+    body: JSON.stringify({ categoria: categoria })
+  })
+  .then(response => response.json())
+  .then(data => {
+    palabraActual = data.word.toUpperCase();
+    palabraMostrada = '_'.repeat(palabraActual.length);
+    document.getElementById('palabra-secreta').innerText = palabraMostrada.split('').join(' ');
+    errores = 0;
+    limpiarCanvas();
+  })
+  .catch(error => {
+    console.error(error);
+    alert('Error al obtener la palabra');
   });
-
-  const data = await res.json();
-  palabraSecreta = data.word.toUpperCase();
-  iniciarJuego();
 }
-
-function iniciarJuego() {
-  palabraMostrada = '_'.repeat(palabraSecreta.length);
-  document.getElementById('palabra-oculta').innerText = palabraMostrada.split('').join(' ');
-  document.getElementById('juego').classList.remove('hidden');
-  letrasIncorrectas = [];
-  intentos = 6;
-  limpiarCanvas();
-}
-
 
 function probarLetra() {
-  const input = document.getElementById('letra');
-  const letra = input.value.toUpperCase();
-  input.value = '';
+  const letra = document.getElementById('letra').value.toUpperCase();
+  if (!letra) return;
 
-  if (!letra || letra.length !== 1) return;
-
-  if (palabraSecreta.includes(letra)) {
-    let nuevaPalabra = '';
-    for (let i = 0; i < palabraSecreta.length; i++) {
-      if (palabraSecreta[i] === letra) {
-        nuevaPalabra += letra;
-      } else {
-        nuevaPalabra += palabraMostrada[i];
-      }
-    }
-    palabraMostrada = nuevaPalabra;
-    document.getElementById('palabra-oculta').innerText = palabraMostrada.split('').join(' ');
-
-    if (!palabraMostrada.includes('_')) {
-      alert('¡Ganaste!');
-    }
-  } else {
-    if (!letrasIncorrectas.includes(letra)) {
-      letrasIncorrectas.push(letra);
-      intentos--;
-      dibujarAhorcado();
-      document.getElementById('letras-incorrectas').innerText = 'Letras incorrectas: ' + letrasIncorrectas.join(', ');
-      if (intentos === 0) {
-        alert('¡Perdiste! La palabra era: ' + palabraSecreta);
-      }
+  let nuevaPalabra = '';
+  let acierto = false;
+  for (let i = 0; i < palabraActual.length; i++) {
+    if (palabraActual[i] === letra) {
+      nuevaPalabra += letra;
+      acierto = true;
+    } else {
+      nuevaPalabra += palabraMostrada[i];
     }
   }
+
+  palabraMostrada = nuevaPalabra;
+  document.getElementById('palabra-secreta').innerText = palabraMostrada.split('').join(' ');
+
+  if (!acierto) {
+    errores++;
+    dibujarAhorcado();
+  }
+
+  if (palabraMostrada === palabraActual) {
+    alert('🎉 ¡Ganaste!');
+  } else if (errores >= maxErrores) {
+    alert('💀 ¡Perdiste! La palabra era: ' + palabraActual);
+  }
+
+  document.getElementById('letra').value = '';
 }
 
 function limpiarCanvas() {
@@ -94,41 +94,53 @@ function limpiarCanvas() {
 function dibujarAhorcado() {
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  ctx.lineWidth = 2;
 
-  if (intentos === 5) {
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'black';
+
+  if (errores === 1) {
     ctx.beginPath();
-    ctx.arc(100, 50, 20, 0, Math.PI * 2); // Cabeza
+    ctx.moveTo(10, 390);
+    ctx.lineTo(290, 390);
     ctx.stroke();
   }
-  if (intentos === 4) {
+  if (errores === 2) {
     ctx.beginPath();
-    ctx.moveTo(100, 70);
-    ctx.lineTo(100, 120); // Cuerpo
+    ctx.moveTo(50, 390);
+    ctx.lineTo(50, 50);
+    ctx.lineTo(200, 50);
+    ctx.lineTo(200, 100);
     ctx.stroke();
   }
-  if (intentos === 3) {
+  if (errores === 3) {
     ctx.beginPath();
-    ctx.moveTo(100, 80);
-    ctx.lineTo(80, 100); // Brazo izquierdo
+    ctx.arc(200, 130, 30, 0, Math.PI * 2);
     ctx.stroke();
   }
-  if (intentos === 2) {
+  if (errores === 4) {
     ctx.beginPath();
-    ctx.moveTo(100, 80);
-    ctx.lineTo(120, 100); // Brazo derecho
+    ctx.moveTo(200, 160);
+    ctx.lineTo(200, 250);
     ctx.stroke();
   }
-  if (intentos === 1) {
+  if (errores === 5) {
     ctx.beginPath();
-    ctx.moveTo(100, 120);
-    ctx.lineTo(80, 150); // Pierna izquierda
+    ctx.moveTo(200, 180);
+    ctx.lineTo(170, 220);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(200, 180);
+    ctx.lineTo(230, 220);
     ctx.stroke();
   }
-  if (intentos === 0) {
+  if (errores === 6) {
     ctx.beginPath();
-    ctx.moveTo(100, 120);
-    ctx.lineTo(120, 150); // Pierna derecha
+    ctx.moveTo(200, 250);
+    ctx.lineTo(170, 300);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(200, 250);
+    ctx.lineTo(230, 300);
     ctx.stroke();
   }
 }
