@@ -1,9 +1,27 @@
 const socket = io();
 
-function crearPartida() {
-  const palabra = prompt('Escribe la palabra secreta para la partida:');
-  if (!palabra) return alert('Palabra inválida');
-  socket.emit('crearPartida', { palabra });
+function generarPalabra() {
+  const categoria = document.getElementById('categoria').value.trim();
+  if (!categoria) return alert('Escribe una categoría válida');
+
+  fetch('/api/get-word', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categoria: categoria })
+  })
+  .then(response => response.json())
+  .then(data => {
+    const palabra = data.word;
+    if (palabra) {
+      socket.emit('crearPartida', { palabra });
+    } else {
+      alert('No se pudo generar la palabra');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Error al generar palabra');
+  });
 }
 
 socket.on('partidaCreada', (id) => {

@@ -67,6 +67,8 @@ io.on('connection', (socket) => {
   console.log('🖥️ Nuevo cliente conectado');
 
   socket.on('crearPartida', ({ palabra }) => {
+    console.log(`📢 Palabra secreta multijugador: ${palabra}`); // <-- Esto es nuevo
+  
     const id = generarID();
     partidas[id] = {
       palabraSecreta: palabra.toUpperCase(),
@@ -78,6 +80,7 @@ io.on('connection', (socket) => {
     socket.join(id);
     socket.emit('partidaCreada', id);
   });
+  
 
   socket.on('unirsePartida', (id) => {
     if (partidas[id]) {
