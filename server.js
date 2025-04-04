@@ -18,6 +18,31 @@ const partidas = {}; // Partidas activas
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+// API para obtener 5 categorías
+app.post('/api/get-categories', async (req, res) => {
+  const { tema } = req.body;
+  try {
+    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: 'Eres un asistente que devuelve solo subcategorías, en formato JSON.' },
+        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde como un arreglo JSON.` }
+      ]
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      }
+    });
+
+    res.json(JSON.parse(response.data.choices[0].message.content));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener categorías' });
+  }
+});
+
+
 // Obtener palabra secreta
 app.post('/api/get-word', async (req, res) => {
   const { categoria } = req.body;
