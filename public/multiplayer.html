@@ -6,7 +6,6 @@
   <title>Juego del Ahorcado - Multijugador</title>
   <link rel="stylesheet" href="/css/estilos.css">
 
-  <!-- Librería de iconos (opcional si quieres mantener diseño bonito) -->
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
@@ -22,23 +21,22 @@
   <div class="contenedor">
     <h1>🎮 Juego del Ahorcado - Multijugador</h1>
 
-    <!-- Botón para crear nueva partida -->
-    <button onclick="crearPartida('Ingenieria')">Crear nueva partida</button>
+    <!-- Usuario inserta categoría -->
+    <input type="text" id="tema" placeholder="Escribe una categoría">
+    <button onclick="crearPartida()">Crear nueva partida</button>
 
-    <!-- Espacio para unir partida -->
-    <div>
+    <!-- Unirse a partida -->
+    <div style="margin-top: 20px;">
       <input type="text" id="inputPartida" placeholder="Ingresa ID de partida">
       <button onclick="unirsePartida()">Unirse a Partida</button>
     </div>
-
-    <!-- Canvas o área de juego aquí si quieres -->
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/multiplayer.js"></script>
 
   <script>
-    lucide.createIcons(); // Carga iconos si quieres
+    lucide.createIcons(); // Cargar íconos
   </script>
 </body>
 </html>
