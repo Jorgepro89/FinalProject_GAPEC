@@ -1,4 +1,17 @@
-const axios = require('axios');
+const fs = require("fs");
+const https = require("https");
+const express = require("express");
+const path = require("path");
+const axios = require("axios");
+require('dotenv').config(); // Si usas .env para claves
+
+const app = express(); // <<<<<< NECESARIO
+
+// Configuración para servir archivos estáticos y leer JSON
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); // <<<<<< NECESARIO para leer req.body en POST
+
+// --------- TUS RUTAS CON OPENAI ---------
 
 // Ruta para obtener 5 subcategorías
 app.post('/api/get-categories', async (req, res) => {
@@ -18,7 +31,7 @@ app.post('/api/get-categories', async (req, res) => {
       }
     });
 
-    res.json(response.data.choices[0].message.content);
+    res.json(JSON.parse(response.data.choices[0].message.content));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener categorías' });
@@ -43,9 +56,24 @@ app.post('/api/get-word', async (req, res) => {
       }
     });
 
-    res.json(response.data.choices[0].message.content);
+    res.json(JSON.parse(response.data.choices[0].message.content));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener palabra' });
   }
+});
+
+// --------- FIN TUS RUTAS ---------
+
+// --------- CONFIGURAR HTTPS ---------
+
+// Cargar los certificados SSL
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'certs', 'server.key')),
+  cert: fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
+};
+
+// Crear el servidor HTTPS
+https.createServer(options, app).listen(443, () => {
+  console.log('🔒 Servidor HTTPS corriendo en https://localhost');
 });
