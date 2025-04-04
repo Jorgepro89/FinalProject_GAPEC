@@ -3,15 +3,15 @@ const https = require("https");
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
-require('dotenv').config(); // Si usas .env para claves
+require('dotenv').config(); // Para usar variables de entorno
 
-const app = express(); // <<<<<< NECESARIO
+const app = express(); // Crear aplicación Express
 
 // Configuración para servir archivos estáticos y leer JSON
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); // <<<<<< NECESARIO para leer req.body en POST
+app.use(express.json()); // Necesario para leer JSON en POST
 
-// --------- TUS RUTAS CON OPENAI ---------
+// --------- RUTAS API CON OPENAI ---------
 
 // Ruta para obtener 5 subcategorías
 app.post('/api/get-categories', async (req, res) => {
@@ -63,7 +63,14 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
-// --------- FIN TUS RUTAS ---------
+// --------- FIN RUTAS API ---------
+
+// --------- RUTA PRINCIPAL (IMPORTANTÍSIMA) ---------
+
+// Cuando alguien entra a https://3.148.252.127/, carga el index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
 // --------- CONFIGURAR HTTPS ---------
 
