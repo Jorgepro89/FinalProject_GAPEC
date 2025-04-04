@@ -1,32 +1,27 @@
 const fs = require("fs");
 const https = require("https");
+const http = require("http");
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
-require('dotenv').config(); // variables de entorno
+const { Server } = require("socket.io");
+require('dotenv').config(); // Cargar variables de entorno
 
 const app = express();
-const server = https.createServer({
-  key: fs.readFileSync(path.join(__dirname, 'certs', 'server.key')),
-  cert: fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
-}, app);
 
-const io = require("socket.io")(server);
-
-const partidas = {}; // Partidas activas
-
+// Middlewares
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// API para obtener 5 categorías
+// API para obtener 5 categorías (modo Solo)
 app.post('/api/get-categories', async (req, res) => {
   const { tema } = req.body;
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Eres un asistente que devuelve solo subcategorías, en formato JSON.' },
-        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde como un arreglo JSON.` }
+        { role: 'system', content: 'Responde SOLO un arreglo JSON plano, sin ```json ni ningún formato especial.' },
+        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde en JSON.` }
       ]
     }, {
       headers: {
@@ -35,24 +30,26 @@ app.post('/api/get-categories', async (req, res) => {
       }
     });
 
-    res.json(JSON.parse(response.data.choices[0].message.content));
+    // Limpiar respuesta
+    let content = response.data.choices[0].message.content;
+    content = content.replace(/```json|```/g, '').trim();
+
+    res.json(JSON.parse(content));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener categorías' });
   }
 });
 
-
-
-// Obtener palabra secreta
+// API para obtener una palabra secreta (Solo y Multijugador)
 app.post('/api/get-word', async (req, res) => {
   const { categoria } = req.body;
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Devuelve un JSON {"word": "palabra"} sin ```json' },
-        { role: 'user', content: `Dame una palabra secreta para la categoría ${categoria}.` }
+        { role: 'system', content: 'Devuelve solo un JSON con una palabra secreta, sin ```json ni otros caracteres.' },
+        { role: 'user', content: `Dame una palabra secreta de la categoría ${categoria}. Responde solo en JSON {"word": "palabra"}.` }
       ]
     }, {
       headers: {
@@ -61,15 +58,11 @@ app.post('/api/get-word', async (req, res) => {
       }
     });
 
-    const cleanContent = response.data.choices[0].message.content
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
+    // Limpiar respuesta
+    let content = response.data.choices[0].message.content;
+    content = content.replace(/```json|```/g, '').trim();
 
-    const palabra = JSON.parse(cleanContent);
-
-    console.log(`📢 Palabra secreta generada: ${palabra.word}`);
-    res.json(palabra);
+    res.json(JSON.parse(content));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener palabra' });
@@ -79,85 +72,72 @@ app.post('/api/get-word', async (req, res) => {
 // Ruta principal
 app.get('/', (req, res) => {
   const userAgent = req.get('User-Agent') || '';
-
   if (userAgent.includes('curl')) {
     res.send('✅ Conexión correcta al servidor HTTPS.');
   } else {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
 });
 
+// Configuración HTTPS
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'certs', 'server.key')),
+  cert: fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
+};
 
-// Sockets
+// Crear servidor HTTPS
+const server = https.createServer(options, app);
+
+// Socket.IO para Multijugador
+const io = new Server(server);
+
+const partidas = {}; // { idPartida: { palabra: '...', jugadores: [socketId1, socketId2] } }
+
 io.on('connection', (socket) => {
-  console.log('🖥️ Nuevo cliente conectado');
+  console.log('🔌 Nuevo cliente conectado');
 
   socket.on('crearPartida', ({ palabra }) => {
-    console.log(`📢 Palabra secreta multijugador: ${palabra}`); // <-- Esto es nuevo
-  
-    const id = generarID();
-    partidas[id] = {
-      palabraSecreta: palabra.toUpperCase(),
-      palabraMostrada: '_'.repeat(palabra.length),
-      intentos: 6,
-      letrasIncorrectas: [],
-      jugadores: [socket.id]
-    };
-    socket.join(id);
-    socket.emit('partidaCreada', id);
+    const id = Math.random().toString(36).substring(2, 8);
+    partidas[id] = { palabra, jugadores: [socket.id] };
+    socket.emit('partidaCreada', { id });
+    console.log(`🎯 Partida creada: ${id} - Palabra: ${palabra}`);
   });
-  
 
-  socket.on('unirsePartida', (id) => {
+  socket.on('unirsePartida', ({ id }) => {
     if (partidas[id]) {
       partidas[id].jugadores.push(socket.id);
       socket.join(id);
-      socket.emit('unido', id);
-      io.to(id).emit('estadoActualizado', partidas[id]);
+      socket.emit('unido', { mensaje: 'Te has unido a la partida.' });
+      io.to(id).emit('jugadoresListos');
+      console.log(`👥 Un jugador se unió a la partida: ${id}`);
     } else {
-      socket.emit('error', 'Partida no encontrada');
+      socket.emit('error', { mensaje: 'ID de partida no válido.' });
     }
   });
 
-  socket.on('probarLetra', ({ id, letra }) => {
-    const partida = partidas[id];
-    if (!partida) return;
-
-    letra = letra.toUpperCase();
-    let acierto = false;
-
-    for (let i = 0; i < partida.palabraSecreta.length; i++) {
-      if (partida.palabraSecreta[i] === letra) {
-        partida.palabraMostrada = partida.palabraMostrada.substring(0, i) + letra + partida.palabraMostrada.substring(i + 1);
-        acierto = true;
-      }
-    }
-
-    if (!acierto && !partida.letrasIncorrectas.includes(letra)) {
-      partida.intentos--;
-      partida.letrasIncorrectas.push(letra);
-    }
-
-    io.to(id).emit('estadoActualizado', partida);
-
-    if (partida.palabraMostrada === partida.palabraSecreta) {
-      io.to(id).emit('ganaron');
-      delete partidas[id];
-    } else if (partida.intentos === 0) {
-      io.to(id).emit('perdieron', partida.palabraSecreta);
-      delete partidas[id];
-    }
+  socket.on('intentoLetra', ({ id, letra }) => {
+    io.to(id).emit('letraRecibida', { letra });
   });
 
   socket.on('disconnect', () => {
     console.log('❌ Cliente desconectado');
+    for (const id in partidas) {
+      partidas[id].jugadores = partidas[id].jugadores.filter(j => j !== socket.id);
+      if (partidas[id].jugadores.length === 0) {
+        delete partidas[id];
+        console.log(`🗑️ Partida ${id} eliminada`);
+      }
+    }
   });
 });
 
+// Lanzar el servidor HTTPS
 server.listen(443, () => {
-  console.log('🔒 Servidor HTTPS + WebSocket corriendo en https://localhost');
+  console.log('🔒 Servidor HTTPS corriendo en https://localhost');
 });
 
-function generarID() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
+// Redireccionar HTTP a HTTPS
+http.createServer((req, res) => {
+  res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
+  res.end();
+}).listen(80);
