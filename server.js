@@ -31,12 +31,9 @@ app.post('/api/get-categories', async (req, res) => {
     });
 
     let content = response.data.choices[0].message.content;
-
-    // ⚡ Limpiar si OpenAI mete bloques innecesarios
     content = content.replace(/```json|```/g, '').trim();
 
-    // ⚡ Imprime en la consola qué regresó OpenAI
-    console.log('Respuesta de OpenAI para categorías:', content);
+    console.log('📋 Categorías recibidas de OpenAI:', content);
 
     res.json(JSON.parse(content));
   } catch (error) {
@@ -44,7 +41,6 @@ app.post('/api/get-categories', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener categorías' });
   }
 });
-
 
 // API para obtener una palabra secreta (Solo y Multijugador)
 app.post('/api/get-word', async (req, res) => {
@@ -63,11 +59,15 @@ app.post('/api/get-word', async (req, res) => {
       }
     });
 
-    // Limpiar respuesta
     let content = response.data.choices[0].message.content;
     content = content.replace(/```json|```/g, '').trim();
 
-    res.json(JSON.parse(content));
+    const data = JSON.parse(content);
+
+    // 🔔 Mostrar en consola la palabra secreta generada
+    console.log(`📢 Palabra secreta generada para la categoría "${categoria}": ${data.word}`);
+
+    res.json(data);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener palabra' });
@@ -77,7 +77,6 @@ app.post('/api/get-word', async (req, res) => {
 // Ruta principal
 app.get('/', (req, res) => {
   const userAgent = req.get('User-Agent') || '';
-
   if (userAgent.includes('curl')) {
     res.send('✅ Conexión correcta al servidor HTTPS.');
   } else {
@@ -106,7 +105,9 @@ io.on('connection', (socket) => {
     const id = Math.random().toString(36).substring(2, 8);
     partidas[id] = { palabra, jugadores: [socket.id] };
     socket.emit('partidaCreada', { id });
-    console.log(`🎯 Partida creada: ${id} - Palabra: ${palabra}`);
+    
+    // 🔥 Mostrar ID y Palabra al crear partida
+    console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra secreta: ${palabra}`);
   });
 
   socket.on('unirsePartida', ({ id }) => {
@@ -131,7 +132,7 @@ io.on('connection', (socket) => {
       partidas[id].jugadores = partidas[id].jugadores.filter(j => j !== socket.id);
       if (partidas[id].jugadores.length === 0) {
         delete partidas[id];
-        console.log(`🗑️ Partida ${id} eliminada`);
+        console.log(`🗑️ Partida eliminada: ${id}`);
       }
     }
   });
@@ -142,7 +143,7 @@ server.listen(443, () => {
   console.log('🔒 Servidor HTTPS corriendo en https://localhost');
 });
 
-// Redireccionar HTTP a HTTPS
+// Redireccionar HTTP ➔ HTTPS
 http.createServer((req, res) => {
   res.writeHead(301, { "Location": "https://" + req.headers.host + req.url });
   res.end();
