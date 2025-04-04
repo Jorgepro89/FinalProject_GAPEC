@@ -13,15 +13,15 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// API para obtener 5 categorías (modo Solo)
+// API para obtener 5 categorías (Solo)
 app.post('/api/get-categories', async (req, res) => {
   const { tema } = req.body;
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Responde SOLO un arreglo JSON plano, sin ```json ni ningún formato especial.' },
-        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde en JSON.` }
+        { role: 'system', content: 'Responde SOLO un arreglo JSON plano como ["cat1", "cat2", "cat3"]. No uses ```json ni ningún otro formato.' },
+        { role: 'user', content: `Dame 5 subcategorías de ${tema}.` }
       ]
     }, {
       headers: {
@@ -30,9 +30,13 @@ app.post('/api/get-categories', async (req, res) => {
       }
     });
 
-    // Limpiar respuesta
     let content = response.data.choices[0].message.content;
+
+    // ⚡ Limpiar si OpenAI mete bloques innecesarios
     content = content.replace(/```json|```/g, '').trim();
+
+    // ⚡ Imprime en la consola qué regresó OpenAI
+    console.log('Respuesta de OpenAI para categorías:', content);
 
     res.json(JSON.parse(content));
   } catch (error) {
@@ -40,6 +44,7 @@ app.post('/api/get-categories', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener categorías' });
   }
 });
+
 
 // API para obtener una palabra secreta (Solo y Multijugador)
 app.post('/api/get-word', async (req, res) => {
