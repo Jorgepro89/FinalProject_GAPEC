@@ -67,10 +67,17 @@ app.post('/api/get-word', async (req, res) => {
 
 // --------- RUTA PRINCIPAL (IMPORTANTÍSIMA) ---------
 
-// Cuando alguien entra a https://3.148.252.127/, carga el index.html
+// Cuando alguien entra a https://3.148.252.127/, poner el mensaje
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  const userAgent = req.get('User-Agent') || '';
+
+  if (userAgent.includes('curl')) {
+    res.send('✅ Conexión correcta al servidor HTTPS.');
+  } else {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  }
 });
+
 
 // --------- CONFIGURAR HTTPS ---------
 
