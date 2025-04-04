@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Multijugador - Ahorcado</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="/js/multiplayer.js" defer></script>
+</head>
+<body>
+
+<nav class="barra-superior">
+  <a href="/" class="inicio">
+    <i data-lucide="home"></i>
+  </a>
+  <a href="/creadores.html" class="enlace-creadores">Creadores</a>
+</nav>
+
+<div class="container">
+  <h1>🎯 Multijugador</h1>
+
+  <button onclick="crearPartida()">Crear partida nueva</button>
+
+  <div id="idPartida" class="hidden">
+    <h2>Tu ID de partida:</h2>
+    <p id="codigoPartida"></p>
+    <input id="unirCodigo" placeholder="Código para unirte">
+    <button onclick="unirsePartida()">Unirse a partida</button>
+  </div>
+
+</div>
+
+</body>
+</html>

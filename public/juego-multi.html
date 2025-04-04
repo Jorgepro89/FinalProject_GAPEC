@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego Multijugador - Ahorcado</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="/js/juego-multi.js" defer></script>
+</head>
+<body>
+
+<nav class="barra-superior">
+  <a href="/" class="inicio">
+    <i data-lucide="home"></i>
+  </a>
+  <a href="/creadores.html" class="enlace-creadores">Creadores</a>
+</nav>
+
+<div class="container">
+  <h1>🎮 Multijugador</h1>
+
+  <canvas id="canvas" width="200" height="250"></canvas>
+
+  <div id="palabra-oculta"></div>
+
+  <input type="text" id="letra" maxlength="1" placeholder="Letra">
+  <button onclick="probarLetra()">Probar letra</button>
+
+  <div id="letras-incorrectas"></div>
+
+</div>
+
+</body>
+</html>
