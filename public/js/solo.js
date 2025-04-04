@@ -49,6 +49,7 @@ function iniciarJuego() {
   limpiarCanvas();
 }
 
+
 function probarLetra() {
   const input = document.getElementById('letra');
   const letra = input.value.toUpperCase();
