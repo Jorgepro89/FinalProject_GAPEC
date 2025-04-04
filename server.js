@@ -50,10 +50,17 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
-// Rutas
+// Ruta principal
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  const userAgent = req.get('User-Agent') || '';
+
+  if (userAgent.includes('curl')) {
+    res.send('✅ Conexión correcta al servidor HTTPS.');
+  } else {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  }
 });
+
 
 // Sockets
 io.on('connection', (socket) => {
