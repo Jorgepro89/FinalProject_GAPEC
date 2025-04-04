@@ -19,7 +19,7 @@ function crearPartida() {
     .then(response => response.json())
     .then(data => {
       console.log('Palabra generada por IA:', data.word);
-      socket.emit('crearPartida', { palabra: data.word });
+      socket.emit('crearPartida', data.word);
       palabra = data.word.toUpperCase();
     })
     .catch(error => {
@@ -41,33 +41,28 @@ function unirsePartida() {
   }
 }
 
-// Recibe ID de partida creada
 socket.on('partidaCreada', (id) => {
   console.log('ID de partida creado:', id);
   alert('🎯 ID de partida: ' + id);
   idPartida = id;
 });
 
-// Cuando se unen jugadores
 socket.on('jugadoresListos', () => {
   document.getElementById('inicio').style.display = 'none';
   document.getElementById('juego').style.display = 'block';
   inicializarJuego();
 });
 
-// Inicializar juego
 function inicializarJuego() {
   palabraOculta = Array(palabra.length).fill('_');
   actualizarPalabra();
   dibujarAhorcado();
 }
 
-// Actualizar palabra oculta en pantalla
 function actualizarPalabra() {
   document.getElementById('palabraSecreta').innerText = palabraOculta.join(' ');
 }
 
-// Enviar letra al servidor
 function enviarLetra() {
   const letra = document.getElementById('letraInput').value.toUpperCase();
   document.getElementById('letraInput').value = '';
@@ -76,7 +71,6 @@ function enviarLetra() {
   }
 }
 
-// Cuando se recibe una letra
 socket.on('letraRecibida', (data) => {
   const letra = data.letra.toUpperCase();
   if (palabra.includes(letra)) {
@@ -92,7 +86,6 @@ socket.on('letraRecibida', (data) => {
   actualizarPalabra();
 });
 
-// Dibujar el ahorcado
 function dibujarAhorcado() {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -103,26 +96,11 @@ function dibujarAhorcado() {
   ctx.lineTo(50, 10);
   ctx.lineTo(150, 10);
   ctx.lineTo(150, 30);
-  if (errores > 0) ctx.arc(150, 40, 10, 0, Math.PI * 2); // Cabeza
-  if (errores > 1) {
-    ctx.moveTo(150, 50);
-    ctx.lineTo(150, 100); // Cuerpo
-  }
-  if (errores > 2) {
-    ctx.moveTo(150, 60);
-    ctx.lineTo(130, 80); // Brazo izquierdo
-  }
-  if (errores > 3) {
-    ctx.moveTo(150, 60);
-    ctx.lineTo(170, 80); // Brazo derecho
-  }
-  if (errores > 4) {
-    ctx.moveTo(150, 100);
-    ctx.lineTo(130, 130); // Pierna izquierda
-  }
-  if (errores > 5) {
-    ctx.moveTo(150, 100);
-    ctx.lineTo(170, 130); // Pierna derecha
-  }
+  if (errores > 0) ctx.arc(150, 40, 10, 0, Math.PI * 2);
+  if (errores > 1) { ctx.moveTo(150, 50); ctx.lineTo(150, 100); }
+  if (errores > 2) { ctx.moveTo(150, 60); ctx.lineTo(130, 80); }
+  if (errores > 3) { ctx.moveTo(150, 60); ctx.lineTo(170, 80); }
+  if (errores > 4) { ctx.moveTo(150, 100); ctx.lineTo(130, 130); }
+  if (errores > 5) { ctx.moveTo(150, 100); ctx.lineTo(170, 130); }
   ctx.stroke();
 }

@@ -100,13 +100,11 @@ const partidas = {}; // { idPartida: { palabra: '...', jugadores: [socketId1, so
 io.on('connection', (socket) => {
   console.log('🔌 Nuevo cliente conectado');
 
-  socket.on('crearPartida', ({ palabra }) => {
+  socket.on('crearPartida', (palabra) => {
     const id = Math.random().toString(36).substring(2, 8);
     partidas[id] = { palabra, jugadores: [socket.id] };
-
-    socket.emit('partidaCreada', id);
-
-    console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra secreta: ${palabra}`);
+    socket.emit('partidaCreada', id); // 🔥 SOLO enviamos el id directamente
+    console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra: ${palabra}`);
   });
 
   socket.on('unirsePartida', (id) => {
@@ -136,6 +134,7 @@ io.on('connection', (socket) => {
     }
   });
 });
+
 
 // Lanzar el servidor HTTPS
 server.listen(443, () => {
