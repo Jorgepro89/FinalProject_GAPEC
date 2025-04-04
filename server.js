@@ -77,10 +77,11 @@ app.post('/api/get-word', async (req, res) => {
 // Ruta principal
 app.get('/', (req, res) => {
   const userAgent = req.get('User-Agent') || '';
+
   if (userAgent.includes('curl')) {
     res.send('✅ Conexión correcta al servidor HTTPS.');
   } else {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
   }
 });
 
