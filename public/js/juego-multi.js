@@ -51,39 +51,10 @@ function dibujarAhorcado(fallos) {
   const ctx = canvas.getContext('2d');
   ctx.lineWidth = 2;
 
-  if (fallos > 0) {
-    ctx.beginPath();
-    ctx.arc(100, 50, 20, 0, Math.PI * 2); // Cabeza
-    ctx.stroke();
-  }
-  if (fallos > 1) {
-    ctx.beginPath();
-    ctx.moveTo(100, 70);
-    ctx.lineTo(100, 120); // Cuerpo
-    ctx.stroke();
-  }
-  if (fallos > 2) {
-    ctx.beginPath();
-    ctx.moveTo(100, 80);
-    ctx.lineTo(80, 100); // Brazo izq
-    ctx.stroke();
-  }
-  if (fallos > 3) {
-    ctx.beginPath();
-    ctx.moveTo(100, 80);
-    ctx.lineTo(120, 100); // Brazo der
-    ctx.stroke();
-  }
-  if (fallos > 4) {
-    ctx.beginPath();
-    ctx.moveTo(100, 120);
-    ctx.lineTo(80, 150); // Pierna izq
-    ctx.stroke();
-  }
-  if (fallos > 5) {
-    ctx.beginPath();
-    ctx.moveTo(100, 120);
-    ctx.lineTo(120, 150); // Pierna der
-    ctx.stroke();
-  }
+  if (fallos > 0) { ctx.beginPath(); ctx.arc(100, 50, 20, 0, Math.PI * 2); ctx.stroke(); }
+  if (fallos > 1) { ctx.beginPath(); ctx.moveTo(100, 70); ctx.lineTo(100, 120); ctx.stroke(); }
+  if (fallos > 2) { ctx.beginPath(); ctx.moveTo(100, 80); ctx.lineTo(80, 100); ctx.stroke(); }
+  if (fallos > 3) { ctx.beginPath(); ctx.moveTo(100, 80); ctx.lineTo(120, 100); ctx.stroke(); }
+  if (fallos > 4) { ctx.beginPath(); ctx.moveTo(100, 120); ctx.lineTo(80, 150); ctx.stroke(); }
+  if (fallos > 5) { ctx.beginPath(); ctx.moveTo(100, 120); ctx.lineTo(120, 150); ctx.stroke(); }
 }

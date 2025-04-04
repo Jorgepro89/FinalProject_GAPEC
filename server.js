@@ -3,7 +3,7 @@ const https = require("https");
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
-require('dotenv').config();
+require('dotenv').config(); // variables de entorno
 
 const app = express();
 const server = https.createServer({
@@ -13,20 +13,20 @@ const server = https.createServer({
 
 const io = require("socket.io")(server);
 
-const partidas = {}; // Guardar partidas aquí
+const partidas = {}; // Partidas activas
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// API para obtener palabra secreta
+// Obtener palabra secreta
 app.post('/api/get-word', async (req, res) => {
   const { categoria } = req.body;
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Devuelve solo un JSON simple {"word": "palabra"} sin ```json.' },
-        { role: 'user', content: `Dame una palabra secreta sobre ${categoria}.` }
+        { role: 'system', content: 'Devuelve un JSON {"word": "palabra"} sin ```json' },
+        { role: 'user', content: `Dame una palabra secreta para la categoría ${categoria}.` }
       ]
     }, {
       headers: {
@@ -50,7 +50,7 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
-// Ruta principal
+// Rutas
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
@@ -118,12 +118,10 @@ io.on('connection', (socket) => {
   });
 });
 
-// Crear servidor HTTPS
 server.listen(443, () => {
-  console.log('🔒 Servidor HTTPS y WebSocket corriendo en https://localhost');
+  console.log('🔒 Servidor HTTPS + WebSocket corriendo en https://localhost');
 });
 
-// Utilidad para ID
 function generarID() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
