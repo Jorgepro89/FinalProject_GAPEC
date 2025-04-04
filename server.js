@@ -3,26 +3,23 @@ const https = require("https");
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
-require('dotenv').config(); // Para usar variables de entorno
+require('dotenv').config(); // Cargar variables de entorno
 
-const app = express(); // Crear aplicación Express
+const app = express();
 
-// Configuración para servir archivos estáticos y leer JSON
+// Middlewares
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); // Necesario para leer JSON en POST
+app.use(express.json());
 
-// --------- RUTAS API CON OPENAI ---------
-
-// Ruta para obtener 5 subcategorías
+// API para obtener categorías
 app.post('/api/get-categories', async (req, res) => {
   const { tema } = req.body;
-
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Eres un asistente que devuelve solo subcategorías, en forma de lista JSON, sin explicaciones.' },
-        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde en formato JSON simple.` }
+        { role: 'system', content: 'Eres un asistente que devuelve solo subcategorías, en formato JSON.' },
+        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo JSON simple.` }
       ]
     }, {
       headers: {
@@ -38,16 +35,15 @@ app.post('/api/get-categories', async (req, res) => {
   }
 });
 
-// Ruta para obtener palabra secreta
+// API para obtener una palabra secreta
 app.post('/api/get-word', async (req, res) => {
   const { categoria } = req.body;
-
   try {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Eres un asistente que devuelve una sola palabra, relacionada a la categoría, sin explicaciones, solo la palabra en JSON {"word": "palabra" }.' },
-        { role: 'user', content: `Dame una palabra secreta sobre ${categoria}.` }
+        { role: 'system', content: 'Devuelve una sola palabra relacionada en formato JSON {"word": "palabra"}.' },
+        { role: 'user', content: `Dame una palabra secreta de la categoría ${categoria}.` }
       ]
     }, {
       headers: {
@@ -63,14 +59,9 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
-// --------- FIN RUTAS API ---------
-
-// --------- RUTA PRINCIPAL (IMPORTANTÍSIMA) ---------
-
-// Cuando alguien entra a https://3.148.252.127/, poner el mensaje
+// Ruta principal
 app.get('/', (req, res) => {
   const userAgent = req.get('User-Agent') || '';
-
   if (userAgent.includes('curl')) {
     res.send('✅ Conexión correcta al servidor HTTPS.');
   } else {
@@ -78,16 +69,12 @@ app.get('/', (req, res) => {
   }
 });
 
-
-// --------- CONFIGURAR HTTPS ---------
-
-// Cargar los certificados SSL
+// HTTPS
 const options = {
   key: fs.readFileSync(path.join(__dirname, 'certs', 'server.key')),
   cert: fs.readFileSync(path.join(__dirname, 'certs', 'server.cert'))
 };
 
-// Crear el servidor HTTPS
 https.createServer(options, app).listen(443, () => {
   console.log('🔒 Servidor HTTPS corriendo en https://localhost');
 });
