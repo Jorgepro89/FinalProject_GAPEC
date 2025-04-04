@@ -74,15 +74,6 @@ app.post('/api/get-word', async (req, res) => {
   }
 });
 
-// Ruta principal
-app.get('/', (req, res) => {
-  const userAgent = req.get('User-Agent') || '';
-  if (userAgent.includes('curl')) {
-    res.send('✅ Conexión correcta al servidor HTTPS.');
-  } else {
-    res.sendFile(path.join(__dirname, 'views', 'index.html'));
-  }
-});
 
 // Configuración HTTPS
 const options = {
@@ -104,13 +95,14 @@ io.on('connection', (socket) => {
   socket.on('crearPartida', ({ palabra }) => {
     const id = Math.random().toString(36).substring(2, 8);
     partidas[id] = { palabra, jugadores: [socket.id] };
-    socket.emit('partidaCreada', { id });
-    
-    // 🔥 Mostrar ID y Palabra al crear partida
+
+    // 🔥 Enviar SOLO el id (no como objeto)
+    socket.emit('partidaCreada', id);
+
     console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra secreta: ${palabra}`);
   });
 
-  socket.on('unirsePartida', ({ id }) => {
+  socket.on('unirsePartida', (id) => {
     if (partidas[id]) {
       partidas[id].jugadores.push(socket.id);
       socket.join(id);
@@ -136,6 +128,16 @@ io.on('connection', (socket) => {
       }
     }
   });
+});
+
+// Ruta principal
+app.get('/', (req, res) => {
+  const userAgent = req.get('User-Agent') || '';
+  if (userAgent.includes('curl')) {
+    res.send('✅ Conexión correcta al servidor HTTPS.');
+  } else {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+  }
 });
 
 // Lanzar el servidor HTTPS
