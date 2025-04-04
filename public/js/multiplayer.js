@@ -1,37 +1,44 @@
 const socket = io();
 
-// Escuchar cuando se crea una partida
-socket.on('partidaCreada', (id) => {
-  console.log('ID de partida creado:', id);
-  alert('ID de partida: ' + id); // ✅ Aquí ya funciona bien
-});
+function generarPalabra() {
+  const categoria = document.getElementById('categoria').value.trim();
+  if (!categoria) return alert('Escribe una categoría válida');
 
-// Escuchar cuando el jugador se une
-socket.on('unido', (data) => {
-  console.log(data.mensaje);
-});
-
-// Escuchar cuando los jugadores están listos
-socket.on('jugadoresListos', () => {
-  console.log('Jugadores listos, ¡comienza la partida!');
-});
-
-// Escuchar cuando se recibe una letra
-socket.on('letraRecibida', (data) => {
-  console.log('Letra recibida:', data.letra);
-});
-
-// Función para crear partida
-function crearPartida(palabra) {
-  socket.emit('crearPartida', { palabra });
+  fetch('/api/get-word', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ categoria: categoria })
+  })
+  .then(response => response.json())
+  .then(data => {
+    const palabra = data.word;
+    if (palabra) {
+      socket.emit('crearPartida', { palabra });
+    } else {
+      alert('No se pudo generar la palabra');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('Error al generar palabra');
+  });
 }
 
-// Función para unirse a una partida
-function unirseAPartida(id) {
+socket.on('partidaCreada', (id) => {
+  document.getElementById('idPartida').classList.remove('hidden');
+  document.getElementById('codigoPartida').innerText = id;
+});
+
+function unirsePartida() {
+  const id = document.getElementById('unirCodigo').value.trim().toUpperCase();
+  if (!id) return;
   socket.emit('unirsePartida', id);
 }
 
-// Función para enviar intento de letra
-function enviarLetra(id, letra) {
-  socket.emit('intentoLetra', { id, letra });
-}
+socket.on('unido', (id) => {
+  window.location.href = `/juego-multi.html?id=${id}`;
+});
+
+socket.on('error', (mensaje) => {
+  alert(mensaje);
+});
