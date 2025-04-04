@@ -4,8 +4,18 @@
   <meta charset="UTF-8">
   <title>Modo Solo - Ahorcado IA</title>
   <link rel="stylesheet" href="/css/solo.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/solo.js" defer></script>
 </head>
 <body>
+
+  <nav class="barra-superior">
+    <a href="/" class="inicio">
+      <i data-lucide="home"></i>
+    </a>
+    <a href="/creadores.html" class="enlace-creadores">Creadores</a>
+  </nav>
+
   <div class="container">
     <h1>🎯 Modo Solo</h1>
     
@@ -25,6 +35,9 @@
     </div>
   </div>
 
-  <script src="/js/solo.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+
 </body>
 </html>
