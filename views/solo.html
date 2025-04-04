@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Modo Solo - Ahorcado IA</title>
+  <link rel="stylesheet" href="/css/solo.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Modo Solo</h1>
+    
+    <div id="tema-input">
+      <input type="text" id="tema" placeholder="Escribe un tema (ej. Ingeniería)">
+      <button onclick="enviarTema()">Enviar Tema</button>
+    </div>
+
+    <div id="categorias" class="hidden"></div>
+
+    <div id="juego" class="hidden">
+      <canvas id="canvas" width="200" height="250"></canvas>
+      <div id="palabra-oculta"></div>
+      <input type="text" id="letra" maxlength="1" placeholder="Letra">
+      <button onclick="probarLetra()">Probar letra</button>
+      <div id="letras-incorrectas"></div>
+    </div>
+  </div>
+
+  <script src="/js/solo.js"></script>
+</body>
+</html>
