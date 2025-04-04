@@ -18,8 +18,8 @@ app.post('/api/get-categories', async (req, res) => {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Eres un asistente que devuelve solo subcategorías, en formato JSON.' },
-        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo JSON simple.` }
+        { role: 'system', content: 'Eres un asistente que responde solo con un JSON simple. No uses ```json ni ```.' },
+        { role: 'user', content: `Dame 5 subcategorías de ${tema}. Solo responde en formato JSON simple.` }
       ]
     }, {
       headers: {
@@ -28,7 +28,13 @@ app.post('/api/get-categories', async (req, res) => {
       }
     });
 
-    res.json(JSON.parse(response.data.choices[0].message.content));
+    // Limpiar la respuesta para eliminar ```json ``` si existen
+    const cleanContent = response.data.choices[0].message.content
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
+
+    res.json(JSON.parse(cleanContent));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener categorías' });
@@ -42,7 +48,7 @@ app.post('/api/get-word', async (req, res) => {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4o-mini',
       messages: [
-        { role: 'system', content: 'Devuelve una sola palabra relacionada en formato JSON {"word": "palabra"}.' },
+        { role: 'system', content: 'Responde solo con un JSON {"word": "palabra"}. No uses ```json ni ```.' },
         { role: 'user', content: `Dame una palabra secreta de la categoría ${categoria}.` }
       ]
     }, {
@@ -52,7 +58,13 @@ app.post('/api/get-word', async (req, res) => {
       }
     });
 
-    res.json(JSON.parse(response.data.choices[0].message.content));
+    // Limpiar la respuesta para eliminar ```json ``` si existen
+    const cleanContent = response.data.choices[0].message.content
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
+
+    res.json(JSON.parse(cleanContent));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener palabra' });
