@@ -95,15 +95,16 @@ const server = https.createServer(options, app);
 // Socket.IO para Multijugador
 const io = new Server(server);
 
-const partidas = {}; // { idPartida: { palabra: '...', jugadores: [socketId1, socketId2] } }
+const partidas = {}; // { idPartida: { palabra: '...', palabraOculta: [...], errores: 0, jugadores: [socketId1, socketId2] } }
 
 io.on('connection', (socket) => {
   console.log('🔌 Nuevo cliente conectado');
 
   socket.on('crearPartida', (palabra) => {
     const id = Math.random().toString(36).substring(2, 8);
-    partidas[id] = { palabra, jugadores: [socket.id] };
-    socket.emit('partidaCreada', id); // 🔥 SOLO enviamos el id directamente
+    const palabraOculta = Array(palabra.length).fill('_');
+    partidas[id] = { palabra, palabraOculta, errores: 0, jugadores: [socket.id] };
+    socket.emit('partidaCreada', id);
     console.log(`🎯 Nueva partida creada - ID: ${id} | Palabra: ${palabra}`);
   });
 
@@ -111,8 +112,8 @@ io.on('connection', (socket) => {
     if (partidas[id]) {
       partidas[id].jugadores.push(socket.id);
       socket.join(id);
-      socket.emit('unido', { mensaje: 'Te has unido a la partida.' });
-      io.to(id).emit('jugadoresListos');
+      socket.emit('unido', { mensaje: 'Te has unido a la partida.', palabraOculta: partidas[id].palabraOculta });
+      io.to(id).emit('jugadoresListos', { palabraOculta: partidas[id].palabraOculta });
       console.log(`👥 Un jugador se unió a la partida: ${id}`);
     } else {
       socket.emit('error', { mensaje: 'ID de partida no válido.' });
@@ -120,7 +121,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on('intentoLetra', ({ id, letra }) => {
-    io.to(id).emit('letraRecibida', { letra });
+    if (!partidas[id]) return;
+    const partida = partidas[id];
+    let acierto = false;
+
+    for (let i = 0; i < partida.palabra.length; i++) {
+      if (partida.palabra[i].toUpperCase() === letra.toUpperCase()) {
+        partida.palabraOculta[i] = letra.toUpperCase();
+        acierto = true;
+      }
+    }
+
+    if (!acierto) {
+      partida.errores += 1;
+    }
+
+    // Enviar estado actualizado a todos
+    io.to(id).emit('actualizarEstado', {
+      palabraOculta: partida.palabraOculta,
+      errores: partida.errores
+    });
   });
 
   socket.on('disconnect', () => {
@@ -134,6 +154,7 @@ io.on('connection', (socket) => {
     }
   });
 });
+
 
 
 // Lanzar el servidor HTTPS

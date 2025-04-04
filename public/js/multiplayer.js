@@ -1,10 +1,8 @@
 const socket = io();
-
 let idPartida = '';
-let palabra = '';
 let palabraOculta = [];
 let errores = 0;
-let maxErrores = 6;
+const maxErrores = 6;
 const canvas = document.getElementById('canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 
@@ -18,9 +16,8 @@ function crearPartida() {
     })
     .then(response => response.json())
     .then(data => {
-      console.log('Palabra generada por IA:', data.word);
-      socket.emit('crearPartida', data.word);
-      palabra = data.word.toUpperCase();
+      console.log('Palabra generada:', data.word);
+      socket.emit('crearPartida', data.word.toUpperCase());
     })
     .catch(error => {
       console.error('Error obteniendo palabra:', error);
@@ -47,21 +44,19 @@ socket.on('partidaCreada', (id) => {
   idPartida = id;
 });
 
-socket.on('jugadoresListos', () => {
+socket.on('jugadoresListos', ({ palabraOculta: inicial }) => {
+  palabraOculta = inicial;
+  errores = 0;
   document.getElementById('inicio').style.display = 'none';
   document.getElementById('juego').style.display = 'block';
-  inicializarJuego();
+  dibujarTodo();
 });
 
-function inicializarJuego() {
-  palabraOculta = Array(palabra.length).fill('_');
-  actualizarPalabra();
-  dibujarAhorcado();
-}
-
-function actualizarPalabra() {
-  document.getElementById('palabraSecreta').innerText = palabraOculta.join(' ');
-}
+socket.on('actualizarEstado', ({ palabraOculta: nueva, errores: nuevosErrores }) => {
+  palabraOculta = nueva;
+  errores = nuevosErrores;
+  dibujarTodo();
+});
 
 function enviarLetra() {
   const letra = document.getElementById('letraInput').value.toUpperCase();
@@ -71,20 +66,14 @@ function enviarLetra() {
   }
 }
 
-socket.on('letraRecibida', (data) => {
-  const letra = data.letra.toUpperCase();
-  if (palabra.includes(letra)) {
-    for (let i = 0; i < palabra.length; i++) {
-      if (palabra[i] === letra) {
-        palabraOculta[i] = letra;
-      }
-    }
-  } else {
-    errores++;
-    dibujarAhorcado();
-  }
+function dibujarTodo() {
   actualizarPalabra();
-});
+  dibujarAhorcado();
+}
+
+function actualizarPalabra() {
+  document.getElementById('palabraSecreta').innerText = palabraOculta.join(' ');
+}
 
 function dibujarAhorcado() {
   if (!ctx) return;
